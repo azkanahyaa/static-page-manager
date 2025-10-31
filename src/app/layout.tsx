@@ -11,7 +11,11 @@ export const metadata: Metadata = {
   description: 'A production-ready platform for creating, managing, and deploying static websites with advanced editing capabilities.',
   keywords: ['static websites', 'website builder', 'cms', 'web development'],
   authors: [{ name: 'StaticManager Team' }],
-  viewport: 'width=device-width, initial-scale=1',
+}
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
 }
 
 export default function RootLayout({
