@@ -1,0 +1,195 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  password  String
+  role      UserRole @default(EDITOR)
+  avatar    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  projects       Project[]
+  pages          Page[]
+  assets         Asset[]
+  projectMembers ProjectMember[]
+
+  @@map("users")
+}
+
+model Project {
+  id          String        @id @default(cuid())
+  name        String
+  slug        String        @unique
+  description String?
+  domain      String?
+  status      ProjectStatus @default(DRAFT)
+  settings    Json?
+  thumbnail   String?
+  templateId  String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // Relations
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  pages       Page[]
+  assets      Asset[]
+  deployments Deployment[]
+  members     ProjectMember[]
+
+  @@map("projects")
+}
+
+model Page {
+  id          String     @id @default(cuid())
+  title       String
+  slug        String
+  content     String     @default("")
+  htmlContent String?
+  cssContent  String?
+  jsContent   String?
+  metaTitle   String?
+  metaDesc    String?
+  keywords    String?
+  status      PageStatus @default(DRAFT)
+  isHomePage  Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  // Relations
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@unique([projectId, slug])
+  @@map("pages")
+}
+
+model Asset {
+  id           String    @id @default(cuid())
+  filename     String
+  originalName String
+  mimeType     String
+  size         Int
+  url          String
+  type         AssetType
+  folder       String?
+  alt          String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  // Relations
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@map("assets")
+}
+
+model ProjectMember {
+  id        String      @id @default(cuid())
+  role      MemberRole  @default(VIEWER)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  // Relations
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@map("project_members")
+}
+
+model Template {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  category    String
+  thumbnail   String?
+  htmlContent String
+  cssContent  String?
+  jsContent   String?
+  isPublic    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("templates")
+}
+
+model Deployment {
+  id        String           @id @default(cuid())
+  version   String
+  status    DeploymentStatus @default(PENDING)
+  url       String?
+  buildLog  String?
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  // Relations
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("deployments")
+}
+
+// Enums
+enum UserRole {
+  ADMIN
+  PROJECT_OWNER
+  EDITOR
+  VIEWER
+}
+
+enum ProjectStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum PageStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum AssetType {
+  IMAGE
+  VIDEO
+  DOCUMENT
+  FONT
+  OTHER
+}
+
+enum DeploymentStatus {
+  PENDING
+  BUILDING
+  SUCCESS
+  FAILED
+}
+
+enum MemberRole {
+  OWNER
+  EDITOR
+  VIEWER
+}
