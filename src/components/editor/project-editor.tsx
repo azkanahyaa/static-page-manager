@@ -160,9 +160,9 @@ export default function ProjectEditor({ projectId, session }: ProjectEditorProps
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          htmlContent: currentPage.htmlContent,
-          cssContent: currentPage.cssContent,
-          jsContent: currentPage.jsContent,
+          htmlContent: currentPage.htmlContent || '',
+          cssContent: currentPage.cssContent || '',
+          jsContent: currentPage.jsContent || '',
         }),
       })
 
